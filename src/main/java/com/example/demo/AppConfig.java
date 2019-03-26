@@ -1,19 +1,17 @@
 package com.example.demo;
 
-import org.apache.commons.lang3.EnumUtils;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.TextStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Configuration
 public class AppConfig {
@@ -77,5 +75,13 @@ public class AppConfig {
 
         Instant instant = zonedDateTime.toInstant();
         System.out.println(Date.from(instant));
+
+        List<String> q = new ArrayList<>();
+        check(null);
+    }
+
+    public static void check(List<String> s){
+//        System.out.println(s.isEmpty());
+        System.out.println(CollectionUtils.isEmpty(s));
     }
 }
