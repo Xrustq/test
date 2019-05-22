@@ -1,10 +1,16 @@
 package com.example.demo;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.FastByteArrayOutputStream;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,20 +18,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 @Configuration
 public class AppConfig {
+
+    private static AtomicBoolean a = new AtomicBoolean(true);
+    @PostConstruct
+    private void start() {
+        Thread q = new Thread(() -> {
+            while (true) {
+                try {
+                    LockSupport.parkNanos(TimeUnit.NANOSECONDS.convert(5000L, TimeUnit.MILLISECONDS));
+                } finally {
+                    System.out.println("1111111111111111111111111111111111111111111111");
+                    LockSupport.parkNanos(TimeUnit.NANOSECONDS.convert(5000L, TimeUnit.MILLISECONDS));
+                    System.out.println("2222222222222222222222222222222222222");
+                }
+            }
+        });
+        q.setName(String.format("[%s-scanThread]", getClass().getSimpleName()));
+        q.setDaemon(true);
+        q.setPriority(Thread.MIN_PRIORITY+1);
+        q.start();
+    }
 
     @Bean
     @Scope(value = "prototype")
     public MyPrototypeBean prototypeBean() {
         MyPrototypeBean a = new MyPrototypeBean();
         System.out.println("prototypeBean " + a.getList());
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return a;
     }
 
@@ -47,41 +71,23 @@ public class AppConfig {
 
 
     public static void main(String[] args) {
-//        AnnotationConfigApplicationContext context =
-//                new AnnotationConfigApplicationContext(AppConfig.class);
-//
-//        System.out.println(Statuses.valueOf("ENABLED"));
-//
-//        MyPrototypeBean bean = (MyPrototypeBean) context.getBean("singletonBean");
-//        MyPrototypeBean bean2 = (MyPrototypeBean) context.getBean("singletonBean2");
-//
-//        System.out.println(bean.getList() + "-1 2");
-//        System.out.println(bean2.getList() + "-2 2");
-//
-//        System.out.println(Arrays.asList(context.getBeanDefinitionNames()));
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(AppConfig.class);
 
-//        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-//                // date and time
-//                .appendPattern()
-//                // timezone short name with custom set of preferred zones
-//                // create formatter (use English locale for month and day of week)
-//                .toFormatter(Locale.ENGLISH);
+        System.out.println(Statuses.valueOf("ENABLED"));
 
-//        String input = "Mon 14 Aug 2017 02:00 AM CEST";
-//        System.out.println(ZonedDateTime.parse(input, formatter));
-//
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(
-                "Sat Mar 07 01:00:00 SAMT 2015", DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy"));
+        MyPrototypeBean bean = (MyPrototypeBean) context.getBean("singletonBean");
+        MyPrototypeBean bean2 = (MyPrototypeBean) context.getBean("singletonBean2");
 
-        Instant instant = zonedDateTime.toInstant();
-        System.out.println(Date.from(instant));
+        System.out.println(bean.getList() + "-1 2");
+        System.out.println(bean2.getList() + "-2 2");
 
-        List<String> q = new ArrayList<>();
-        check(null);
-    }
+        System.out.println(Arrays.asList(context.getBeanDefinitionNames()));
 
-    public static void check(List<String> s){
-//        System.out.println(s.isEmpty());
-        System.out.println(CollectionUtils.isEmpty(s));
+        if (!a.getAndSet(false)) {
+            System.out.println("a");
+        }
+        System.out.println(a.get());
+
     }
 }
