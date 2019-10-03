@@ -47,6 +47,8 @@ public class AppConfig {
 
     @Bean
     @Scope(value = "prototype")
+
+
     public MyPrototypeBean prototypeBean() {
         MyPrototypeBean a = new MyPrototypeBean();
         System.out.println("prototypeBean " + a.getList());
